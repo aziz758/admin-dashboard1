@@ -1,0 +1,6 @@
+export { DashboardPage } from './DashboardPage'
+export { NotificationsPage } from './NotificationsPage'
+export { RatingsPage } from './RatingsPage'
+export { RequestsPage } from './RequestsPage'
+export { TechniciansPage } from './TechniciansPage'
+export { UsersPage } from './UsersPage'
