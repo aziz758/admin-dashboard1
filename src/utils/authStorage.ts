@@ -10,6 +10,8 @@
 const AUTH_STRATEGY: 'localStorage' | 'cookie' = 'localStorage'
 const ACCESS_TOKEN_KEY = 'access_token'
 const LOGIN_PATH = '/login'
+const SESSION_USER_ID_KEY = 'admin_session_user_id'
+const SESSION_USER_TYPE_KEY = 'admin_session_user_type'
 
 /* ------------------------------------------------------------------ */
 /*  Read / write / clear                                               */
@@ -34,9 +36,29 @@ export function setAccessToken(token: string): void {
   localStorage.setItem(ACCESS_TOKEN_KEY, token)
 }
 
+/** Non-sensitive post-login metadata (tab-scoped). */
+export function setSessionIdentity(userId: number, userType: string): void {
+  try {
+    sessionStorage.setItem(SESSION_USER_ID_KEY, String(userId))
+    sessionStorage.setItem(SESSION_USER_TYPE_KEY, userType)
+  } catch {
+    // private mode / quota — ignore
+  }
+}
+
+function clearSessionIdentity(): void {
+  try {
+    sessionStorage.removeItem(SESSION_USER_ID_KEY)
+    sessionStorage.removeItem(SESSION_USER_TYPE_KEY)
+  } catch {
+    // ignore
+  }
+}
+
 /** Remove all auth artifacts from the client. */
 export function clearSession(): void {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
+  clearSessionIdentity()
   // When cookie strategy is active the backend is responsible for clearing
   // the cookie (e.g. via a /logout endpoint). We still remove any residual
   // localStorage key just in case.

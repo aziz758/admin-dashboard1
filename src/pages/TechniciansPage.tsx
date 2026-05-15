@@ -7,6 +7,7 @@ import { TechnicianDetailsModal } from '../components/technicians/TechnicianDeta
 import { TechniciansFilters } from '../components/technicians/TechniciansFilters'
 import { TechniciansTable } from '../components/technicians/TechniciansTable'
 import { usePaginatedFilters } from '../hooks/usePaginatedFilters'
+import { useTechnicianDetail } from '../hooks/useTechnicianDetail'
 import { useApproveTechnician, useRejectTechnician } from '../hooks/useTechnicianMutations'
 import { useQueryErrorToast } from '../hooks/useQueryErrorToast'
 import { useTechnicians } from '../hooks/useTechnicians'
@@ -23,6 +24,12 @@ export function TechniciansPage() {
   const [startRejectFlow, setStartRejectFlow] = useState(false)
 
   const techniciansQuery = useTechnicians(params)
+  const detailQuery = useTechnicianDetail(
+    selectedTechnician?.id ?? null,
+    Boolean(modalOpen && selectedTechnician),
+  )
+  const technicianForModal = detailQuery.data ?? selectedTechnician
+
   const approveMutation = useApproveTechnician()
   const rejectMutation = useRejectTechnician()
 
@@ -41,14 +48,14 @@ export function TechniciansPage() {
       : null
 
   const modalApproving =
-    Boolean(selectedTechnician) &&
+    Boolean(technicianForModal) &&
     approveMutation.isPending &&
-    approveMutation.variables === selectedTechnician?.id
+    approveMutation.variables === technicianForModal?.id
 
   const modalRejecting =
-    Boolean(selectedTechnician) &&
+    Boolean(technicianForModal) &&
     rejectMutation.isPending &&
-    rejectMutation.variables?.id === selectedTechnician?.id
+    rejectMutation.variables?.id === technicianForModal?.id
 
   const closeModal = () => {
     setModalOpen(false)
@@ -153,7 +160,8 @@ export function TechniciansPage() {
 
       <TechnicianDetailsModal
         open={modalOpen}
-        technician={selectedTechnician}
+        technician={technicianForModal}
+        isDetailFetching={detailQuery.isFetching}
         onClose={closeModal}
         onApprove={handleApprove}
         onReject={handleReject}

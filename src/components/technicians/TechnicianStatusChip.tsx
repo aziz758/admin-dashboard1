@@ -6,6 +6,7 @@ const STATUS_LABEL: Record<TechnicianStatus, string> = {
   pending_documents: 'Pending documents',
   approved: 'Approved',
   rejected: 'Rejected',
+  inactive: 'Inactive',
 }
 
 const STATUS_COLOR: Record<
@@ -16,6 +17,7 @@ const STATUS_COLOR: Record<
   pending_documents: 'primary',
   approved: 'success',
   rejected: 'error',
+  inactive: 'default',
 }
 
 interface TechnicianStatusChipProps {

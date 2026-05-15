@@ -9,7 +9,8 @@ import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
 import { type FormEvent, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { markSessionActive, setAccessToken } from '../utils/authStorage'
+import type { LoginResponse } from '../types/auth.api'
+import { markSessionActive, setAccessToken, setSessionIdentity } from '../utils/authStorage'
 import { getErrorMessage } from '../utils/errorMessage'
 import { toastError } from '../utils/toast'
 import { api } from '../services/api'
@@ -19,11 +20,15 @@ interface LocationState {
   from?: { pathname: string }
 }
 
+function canAccessAdminPanel(userType: string): boolean {
+  return userType === 'customer' || userType === 'admin'
+}
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as LocationState)?.from?.pathname ?? ROUTES.dashboard
-  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -31,11 +36,26 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const { data } = await api.post<{ access_token: string }>('/auth/login', {
-        email,
+      const { data } = await api.post<LoginResponse>('/auth/login', {
+        phone: phone.trim(),
         password,
+        user_type: 'customer',
       })
+
+      if (!data?.access_token) {
+        toastError('Invalid response: missing access token.')
+        return
+      }
+
+      if (!canAccessAdminPanel(data.user_type)) {
+        toastError(
+          'This account cannot open the admin panel. Use an administrator account (customer login).',
+        )
+        return
+      }
+
       setAccessToken(data.access_token)
+      setSessionIdentity(data.user_id, data.user_type)
       markSessionActive()
       navigate(from, { replace: true })
     } catch (err) {
@@ -92,20 +112,20 @@ export default function LoginPage() {
               Admin Panel
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Sign in to your account
+              Sign in with admin phone (customer account)
             </Typography>
           </Box>
 
           <Stack component="form" onSubmit={handleSubmit} spacing={2.5}>
             <TextField
-              id="login-email"
-              label="Phone Number"
-              type="phone"
-              autoComplete="phone"
+              id="login-phone"
+              label="Phone"
+              type="tel"
+              autoComplete="tel"
               required
               fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               disabled={loading}
             />
             <TextField

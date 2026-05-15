@@ -9,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 import IconButton from '@mui/material/IconButton'
+import LinearProgress from '@mui/material/LinearProgress'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
@@ -16,11 +17,14 @@ import { alpha } from '@mui/material/styles'
 import { useEffect, useState } from 'react'
 import { technicianNeedsModeration, type Technician } from '../../types/technicians.api'
 import { DetailRow } from '../common/DetailRow'
+import { TechnicianIdCardPreview } from './TechnicianIdCardPreview'
 import { TechnicianStatusChip } from './TechnicianStatusChip'
 
 interface TechnicianDetailsModalProps {
   open: boolean
   technician: Technician | null
+  /** Shown while `GET /admin/technicians/:id` is refetching */
+  isDetailFetching?: boolean
   onClose: () => void
   onApprove: (id: Technician['id']) => void
   onReject: (id: Technician['id'], reason?: string | null) => void
@@ -33,6 +37,7 @@ interface TechnicianDetailsModalProps {
 export function TechnicianDetailsModal({
   open,
   technician,
+  isDetailFetching = false,
   onClose,
   onApprove,
   onReject,
@@ -87,7 +92,18 @@ export function TechnicianDetailsModal({
           <CloseRoundedIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent dividers>
+      <DialogContent dividers sx={{ position: 'relative' }}>
+        {isDetailFetching ? (
+          <LinearProgress
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              borderRadius: 0,
+            }}
+          />
+        ) : null}
         {!technician ? null : (
           <Stack spacing={2.5}>
             <Stack
@@ -172,6 +188,8 @@ export function TechnicianDetailsModal({
               </Stack>
             </Box>
 
+            <TechnicianIdCardPreview technicianId={technician.id} active={open} />
+
             {technician.custom_service_requests?.length ? (
               <Box>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
@@ -204,13 +222,16 @@ export function TechnicianDetailsModal({
             {canModerate && showRejectField ? (
               <Box sx={{ pt: 1 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                  Internal note (optional — not sent to API yet)
+                  Rejection note (optional)
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  If provided, sent to the server as <code>admin_note</code> with the reject status.
                 </Typography>
                 <TextField
                   fullWidth
                   multiline
                   minRows={2}
-                  placeholder="Keep notes for your team…"
+                  placeholder="Reason for rejection…"
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   slotProps={{ input: { sx: { borderRadius: 2 } } }}

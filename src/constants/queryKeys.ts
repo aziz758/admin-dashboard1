@@ -9,6 +9,7 @@ export const queryKeys = {
     technicians: {
       all: ['admin', 'technicians'] as const,
       list: (params: GetTechniciansParams) => ['admin', 'technicians', 'list', params] as const,
+      detail: (id: number) => ['admin', 'technicians', 'detail', id] as const,
     },
     requests: {
       all: ['admin', 'requests'] as const,

@@ -5,6 +5,7 @@ export const TECHNICIAN_STATUSES = [
   'pending_documents',
   'approved',
   'rejected',
+  'inactive',
 ] as const
 
 export type TechnicianStatus = (typeof TECHNICIAN_STATUSES)[number]

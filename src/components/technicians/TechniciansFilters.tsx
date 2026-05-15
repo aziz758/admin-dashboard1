@@ -21,7 +21,9 @@ const STATUS_FILTER_OPTIONS: { value: '' | TechnicianStatus; label: string }[] =
         ? 'Pending approval'
         : s === 'pending_documents'
           ? 'Pending documents'
-          : s.charAt(0).toUpperCase() + s.slice(1),
+          : s === 'inactive'
+            ? 'Inactive'
+            : s.charAt(0).toUpperCase() + s.slice(1),
   })),
 ]
 

@@ -7,8 +7,9 @@ export function useApproveTechnician() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: Technician['id']) => approveTechnician(id),
-    onSuccess: async () => {
+    onSuccess: async (_data, id) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.admin.technicians.all })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.admin.technicians.detail(id) })
     },
   })
 }
@@ -23,8 +24,11 @@ export function useRejectTechnician() {
       id: Technician['id']
       reason?: string | null
     }) => rejectTechnician(id, { reason }),
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.admin.technicians.all })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.admin.technicians.detail(variables.id),
+      })
     },
   })
 }

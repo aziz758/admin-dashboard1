@@ -4,6 +4,7 @@ import type {
   GetRequestsParams,
   RequestsListResponse,
 } from '../types/requests.api'
+import { isAxiosError } from 'axios'
 import type {
   GetTechniciansParams,
   Technician,
@@ -50,15 +51,59 @@ export async function getTechnicians(params: GetTechniciansParams): Promise<Tech
   return normalizeTechniciansList(data)
 }
 
+export async function getTechnicianById(id: Technician['id']): Promise<Technician> {
+  const { data } = await api.get<Technician>(`/admin/technicians/${id}`)
+  return data
+}
+
+async function messageFromErrorBlob(blob: Blob): Promise<string> {
+  if (!blob.type.includes('application/json')) {
+    return 'Could not load ID document'
+  }
+  try {
+    const text = await blob.text()
+    const j = JSON.parse(text) as { detail?: unknown }
+    if (typeof j.detail === 'string') return j.detail
+    return 'Could not load ID document'
+  } catch {
+    return 'Could not load ID document'
+  }
+}
+
+/** Protected image — use Blob + object URL in the UI. @see `docs/frontend-integration.md` §7.5 */
+export async function getTechnicianIdCardBlob(id: Technician['id']): Promise<Blob> {
+  try {
+    const { data } = await api.get<Blob>(`/admin/technicians/${id}/documents/id-card`, {
+      responseType: 'blob',
+    })
+    if (data.type?.includes('application/json')) {
+      throw new Error(await messageFromErrorBlob(data))
+    }
+    return data
+  } catch (e) {
+    if (isAxiosError(e) && e.response?.data instanceof Blob) {
+      throw new Error(await messageFromErrorBlob(e.response.data))
+    }
+    throw e instanceof Error ? e : new Error('Could not load ID document')
+  }
+}
+
 export async function approveTechnician(id: Technician['id']): Promise<void> {
   await api.put(`/admin/technicians/${id}/status`, { status: 'approved' })
 }
 
+/**
+ * Optional `admin_note` when rejecting (if backend rejects unknown fields, send `{ status }` only).
+ */
 export async function rejectTechnician(
   id: Technician['id'],
-  _body?: { reason?: string | null },
+  body?: { reason?: string | null },
 ): Promise<void> {
-  await api.put(`/admin/technicians/${id}/status`, { status: 'rejected' })
+  const note = body?.reason?.trim()
+  await api.put(`/admin/technicians/${id}/status`, {
+    status: 'rejected',
+    ...(note ? { admin_note: note } : {}),
+  })
 }
 
 function normalizeRequestsList(payload: unknown): RequestsListResponse {
