@@ -159,6 +159,7 @@ export function TechniciansPage() {
       </Card>
 
       <TechnicianDetailsModal
+        key={modalOpen && selectedTechnician ? `${selectedTechnician.id}-${startRejectFlow}` : 'closed'}
         open={modalOpen}
         technician={technicianForModal}
         isDetailFetching={detailQuery.isFetching}

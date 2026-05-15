@@ -70,102 +70,116 @@
 
 ## المرحلة 3 — الخدمات المخصصة («أخرى») — مراجعة الأدمن
 
-- [ ] **3.1** إضافة دوال الخدمة في `adminService` (أو طبقة مناسبة):  
+- [x] **3.1** إضافة دوال الخدمة في `adminService` (أو طبقة مناسبة):  
   - `PUT /api/admin/custom-service-requests/{id}/approve` (إما `service_id` أو `service_name` + `admin_note`)  
   - `PUT /api/admin/custom-service-requests/{id}/reject` (`admin_note`)  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `getServicesCatalog` ← `GET /services/`، و`approveCustomServiceRequest` / `rejectCustomServiceRequest` في `adminService.ts`. أنواع في `src/types/services.api.ts` و`src/types/customServiceRequests.api.ts`.
 
-- [ ] **3.2** واجهة في `TechnicianDetailsModal` (أو مكوّن فرعي): لكل طلب `pending` — أزرار موافقة/رفض مع نماذج الحقول حسب القواعد في الدليل §7.6  
+- [x] **3.2** واجهة في `TechnicianDetailsModal` (أو مكوّن فرعي): لكل طلب `pending` — أزرار موافقة/رفض مع نماذج الحقول حسب القواعد في الدليل §7.6  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: مكوّن `CustomServiceRequestsReview.tsx`: لكل طلب بحالة `pending` — موافقة عبر ربط `service_id` أو إدخال `service_name` + `admin_note` اختياري؛ رفض مع `admin_note` إلزامي. قائمة الخدمات من React Query (`queryKeys.services.catalog`). عرض الطلبات المعالجة سابقاً للقراءة فقط.
 
-- [ ] **3.3** بعد كل عملية نجاح: إعادة جلب قائمة الفنيين / تفاصيل الفني (`invalidateQueries`) كما يوصي الدليل §13  
+- [x] **3.3** بعد كل عملية نجاح: إعادة جلب قائمة الفنيين / تفاصيل الفني (`invalidateQueries`) كما يوصي الدليل §13  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `useCustomServiceRequestMutations` يبطل `queryKeys.admin.technicians.all` و`detail(technicianId)` بعد نجاح الموافقة/الرفض.
 
-- [ ] **3.4** عرض رسالة خطأ الباكند عند محاولة موافقة فني وما زال `pending_custom_service_requests_count > 0` (الدليل §7.7)  
+- [x] **3.4** عرض رسالة خطأ الباكند عند محاولة موافقة فني وما زال `pending_custom_service_requests_count > 0` (الدليل §7.7)  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: تعطيل زر «Approve» مع `Tooltip` عندما `pending_custom_service_requests_count > 0`، وتحديث نص التنبيه. إن تجاوز العميل ذلك لاحقاً، تبقى رسالة `detail` من الباكند تظهر عبر `toastError` + `getErrorMessage` في `TechniciansPage` (كما هو عند فشل الطلب).
 
 ---
 
 ## المرحلة 4 — صفحة التقييمات
 
-- [ ] **4.1** ربط `GET /api/admin/ratings` — أنواع TypeScript + دالة خدمة + مفتاح React Query  
+- [x] **4.1** ربط `GET /api/admin/ratings` — أنواع TypeScript + دالة خدمة + مفتاح React Query  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `src/types/ratings.api.ts`، `getRatings` + `normalizeRatingsList` في `adminService.ts` (يدعم `results`/`items`)، `queryKeys.admin.ratings.list`، `useAdminRatings`، و`TOAST_IDS.ratingsListError`.
 
-- [ ] **4.2** استبدال `RatingsPage` placeholder بجدول (ترقيم، تفريغ حالة، رسالة فارغة) متوافق مع شكل الاستجابة في الدليل §7.9  
+- [x] **4.2** استبدال `RatingsPage` placeholder بجدول (ترقيم، تفريغ حالة، رسالة فارغة) متوافق مع شكل الاستجابة في الدليل §7.9  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `RatingsPage.tsx` مع ترقيم محلي (`page` / `rowsPerPage`) وطلب `page` & `limit` للـ API. `RatingsTable.tsx`: أعمدة الطلب، النجوم (MUI `Rating`)، التعليق، العميل، الفني، التاريخ، `TablePagination`، هيكل تحميل/فارغ مطابق لنمط الطلبات.
 
 ---
 
 ## المرحلة 5 — صفحة المستخدمين
 
-- [ ] **5.1** ربط `GET /api/admin/users` مع `page`, `limit`, `user_type`, `search` حسب الحاجة  
+- [x] **5.1** ربط `GET /api/admin/users` مع `page`, `limit`, `user_type`, `search` حسب الحاجة  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `src/types/users.api.ts`، `getUsers` + `normalizeUsersList` في `adminService.ts`، `queryKeys.admin.users.list`، `useAdminUsers`، و`TOAST_IDS.usersListError`.
 
-- [ ] **5.2** تنفيذ الحذف الناعم `DELETE /api/admin/users/{user_id}?user_type=customer|technician` مع تأكيد في الواجهة  
+- [x] **5.2** تنفيذ الحذف الناعم `DELETE /api/admin/users/{user_id}?user_type=customer|technician` مع تأكيد في الواجهة  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `deleteAdminUser` في `adminService.ts`، `useDeleteAdminUser` مع إبطال قائمة المستخدمين، حوار تأكيد في `UsersPage.tsx`.
 
-- [ ] **5.3** استبدال `UsersPage` placeholder بتجربة استخدام كاملة (فلاتر، حالة تحميل، أخطاء)  
+- [x] **5.3** استبدال `UsersPage` placeholder بتجربة استخدام كاملة (فلاتر، حالة تحميل، أخطاء)  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `UsersFilters.tsx` (نوع المستخدم + بحث مع debounce 400ms)، `UsersTable.tsx` (جدول + ترقيم + حذف)، `UsersPage` مع `QueryErrorAlert` وإعادة ضبط الصفحة عند تغيير الفلاتر.
 
 ---
 
 ## المرحلة 6 — الإشعارات (بث الأدمن)
 
-- [ ] **6.1** نموذج بث: `POST /api/admin/notifications/broadcast` — الحقول `title`, `body`, `target`, `user_ids` عند `target === "specific"`  
+- [x] **6.1** نموذج بث: `POST /api/admin/notifications/broadcast` — الحقول `title`, `body`, `target`, `user_ids` عند `target === "specific"`  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `broadcastAdminNotification` في `adminService.ts`، أنواع `BroadcastTarget` و`BroadcastNotificationRequest` في `src/types/notifications.api.ts`. للجمهور غير `specific` يُرسل `user_ids: []`.
 
-- [ ] **6.2** استبدال `NotificationsPage` placeholder بالنموذج + تحقق من المدخلات + رسائل نجاح/فشل  
+- [x] **6.2** استبدال `NotificationsPage` placeholder بالنموذج + تحقق من المدخلات + رسائل نجاح/فشل  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: `AdminBroadcastForm.tsx` (عنوان، نص، جمهور بـ Radio، حقل IDs عند `specific` مع عدّاد IDs)، تحقق قبل الإرسال، `useMutation` + `toastSuccess` / `toastError` + `getErrorMessage`، ومسح النموذج بعد النجاح. `NotificationsPage.tsx` يعرض `PageHeader` والنموذج.
 
 ---
 
 ## المرحلة 7 — جودة العقد والأخطاء
 
-- [ ] **7.1** توحيد قراءة `detail` من FastAPI (نص أو مصفوفة) في `getErrorMessage` أو ما يعادله لعرض رسائل واضحة للمستخدم  
+- [x] **7.1** توحيد قراءة `detail` من FastAPI (نص أو مصفوفة) في `getErrorMessage` أو ما يعادله لعرض رسائل واضحة للمستخدم  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: إعادة هيكلة `src/utils/errorMessage.ts`: `formatDetailValue` لـ `detail` كنص، أو مصفوفة أخطاء تحقق (مع `loc` + `msg`)، أو مصفوفة نصوص، أو كائن يحوي `msg`؛ دعم `response.data` كنص JSON؛ قراءة `message` في الجذر؛ رسائل احتياطية لـ 404 / 409 / 413 / 422 عند غياب `detail`.
 
-- [ ] **7.2** مراجعة سلوك `401` (تسجيل خروج / توجيه) بعد تعديلات تسجيل الدخول  
+- [x] **7.2** مراجعة سلوك `401` (تسجيل خروج / توجيه) بعد تعديلات تسجيل الدخول  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: التأكد أن `handleUnauthorized` يبقى مناسباً (مسح الجلسة دائماً؛ `replace` إلى `/login` فقط إذا لم نكن على صفحة الدخول). توثيق السلوك في تعليقات `api.ts` و`authStorage.ts`. لم يُستثنَ `POST /auth/login` حتى يُزال توكن قديم عند فشل الدخول.
 
 ---
 
 ## المرحلة 8 — إغلاق ومراجعة نهائية
 
-- [ ] **8.1** تشغيل `npm run lint` و`npm run build` وتصحيح أي مشاكل  
+- [x] **8.1** تشغيل `npm run lint` و`npm run build` وتصحيح أي مشاكل  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: إصلاح قاعدة `react-hooks/set-state-in-effect`: `usePaginatedFilters` يستخدم `setStatus` يدمج إعادة الصفحة؛ `UsersPage` يعيد الصفحة عند تغيير النوع أو عند تغيّر نص البحث بعد الـ debounce عبر `setTimeout(0)`؛ `MainLayout` يغلق الدرج الجوال عبر `setTimeout(0)`؛ `TechnicianDetailsModal` يعتمد `key` على `TechniciansPage` + `useState(startWithReject)`؛ `TechnicianIdCardPreview` يفصل المحمّل مع `startTransition` لحالة التحميل. **`npm run lint`** و**`npm run build`** يمرّان.
 
-- [ ] **8.2** مراجعة يدوية لقائمة الأدمن في `frontend-integration.md` §11 مقابل الشاشات الفعلية  
+- [x] **8.2** مراجعة يدوية لقائمة الأدمن في `frontend-integration.md` §11 مقابل الشاشات الفعلية  
   **سجل الإنجاز:**  
-  - التاريخ:  
-  - ما تم:  
+  - التاريخ: 2026-05-04  
+  - ما تم: مطابقة برمجية مع الدليل (يُنصح بتأكيد يدوي في المتصفح مع الباكند):
+
+| بند §11 (Admin) | التطبيق في الريبو |
+|-----------------|-------------------|
+| Login as admin customer | `LoginPage` — هاتف + `user_type: customer` |
+| Dashboard | `DashboardPage` + `GET /admin/dashboard`، إحصائيات |
+| Pending technicians list | `TechniciansPage` + فلتر الحالة |
+| Technician details | `TechnicianDetailsModal` |
+| Protected ID card viewer | `TechnicianIdCardPreview` (Blob) |
+| Custom service review | `CustomServiceRequestsReview` |
+| Approve/reject technician | أزرار المودال + `PUT .../status` |
+| Requests monitor | `RequestsPage` |
+| Users monitor and soft delete | `UsersPage` |
+| Ratings monitor | `RatingsPage` |
+| Broadcast notifications | `NotificationsPage` + `AdminBroadcastForm` |
 
 ---
 
@@ -183,9 +197,9 @@
 | مفاتيح الاستعلام | `src/constants/queryKeys.ts` |
 | فنيون | `src/pages/TechniciansPage.tsx`, `src/components/technicians/*`, `src/hooks/useTechnicianMutations.ts` |
 | تسجيل الدخول | `src/pages/LoginPage.tsx` |
-| صفحات | `src/pages/RatingsPage.tsx`, `UsersPage.tsx`, `NotificationsPage.tsx` |
+| صفحات | `src/pages/RatingsPage.tsx`, `src/components/ratings/RatingsTable.tsx`, `src/hooks/useAdminRatings.ts`, `src/pages/UsersPage.tsx`, `src/components/users/*`, `src/hooks/useAdminUsers.ts`, `src/hooks/useDeleteAdminUser.ts`, `src/pages/NotificationsPage.tsx`, `src/components/notifications/AdminBroadcastForm.tsx` |
 | الأنواع | `src/types/*.ts` |
 
 عند إكمال **جميع** المراحل، غيّر السطر التالي يدوياً:
 
-**حالة الملف:** قيد التنفيذ ← **مكتمل** (تاريخ الإغلاق: ________)
+**حالة الملف:** **مكتمل** (تاريخ الإغلاق: 2026-05-04)

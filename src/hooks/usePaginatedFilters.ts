@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 export interface PaginatedFiltersReturn<S extends string> {
   page: number
@@ -19,7 +19,7 @@ export interface PaginatedFiltersReturn<S extends string> {
  * Encapsulates the common page + rowsPerPage + status filter state
  * used by paginated list pages (TechniciansPage, RequestsPage, etc.).
  *
- * Automatically resets to page 0 when the status filter changes.
+ * Resets to page 0 whenever `setStatus` is called (status filter change).
  *
  * @example
  * const { page, setPage, rowsPerPage, handleRowsPerPageChange, status, setStatus, params }
@@ -30,12 +30,12 @@ export function usePaginatedFilters<S extends string>(
 ): PaginatedFiltersReturn<S> {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(defaultRowsPerPage)
-  const [status, setStatus] = useState<'' | S>('' as '' | S)
+  const [status, setStatusState] = useState<'' | S>('' as '' | S)
 
-  // Reset to the first page whenever the filter changes.
-  useEffect(() => {
+  const setStatus = useCallback((value: '' | S) => {
+    setStatusState(value)
     setPage(0)
-  }, [status])
+  }, [])
 
   const params = useMemo(
     () => ({

@@ -11,12 +11,14 @@ import DialogTitle from '@mui/material/DialogTitle'
 import IconButton from '@mui/material/IconButton'
 import LinearProgress from '@mui/material/LinearProgress'
 import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { technicianNeedsModeration, type Technician } from '../../types/technicians.api'
 import { DetailRow } from '../common/DetailRow'
+import { CustomServiceRequestsReview } from './CustomServiceRequestsReview'
 import { TechnicianIdCardPreview } from './TechnicianIdCardPreview'
 import { TechnicianStatusChip } from './TechnicianStatusChip'
 
@@ -46,17 +48,7 @@ export function TechnicianDetailsModal({
   startWithReject = false,
 }: TechnicianDetailsModalProps) {
   const [rejectReason, setRejectReason] = useState('')
-  const [showRejectField, setShowRejectField] = useState(false)
-
-  useEffect(() => {
-    if (open && startWithReject) {
-      setShowRejectField(true)
-    }
-    if (!open) {
-      setRejectReason('')
-      setShowRejectField(false)
-    }
-  }, [open, startWithReject, technician?.id])
+  const [showRejectField, setShowRejectField] = useState(startWithReject)
 
   const handleClose = () => {
     setRejectReason('')
@@ -66,6 +58,7 @@ export function TechnicianDetailsModal({
 
   const canModerate = technician ? technicianNeedsModeration(technician.status) : false
   const pendingCustomCount = technician?.pending_custom_service_requests_count ?? 0
+  const approveBlockedByCustomServices = canModerate && pendingCustomCount > 0
 
   return (
     <Dialog
@@ -124,7 +117,8 @@ export function TechnicianDetailsModal({
             {pendingCustomCount > 0 ? (
               <Alert severity="warning" sx={{ borderRadius: 2 }}>
                 This technician has <strong>{pendingCustomCount}</strong> pending custom service request(s).
-                The backend may block approval until those are reviewed.
+                Review them below — the server blocks account approval until none are pending (see integration
+                guide §7.7).
               </Alert>
             ) : null}
 
@@ -191,32 +185,10 @@ export function TechnicianDetailsModal({
             <TechnicianIdCardPreview technicianId={technician.id} active={open} />
 
             {technician.custom_service_requests?.length ? (
-              <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                  Custom service requests
-                </Typography>
-                <Stack spacing={1}>
-                  {technician.custom_service_requests.map((req) => (
-                    <Box
-                      key={req.id}
-                      sx={{
-                        p: 1.5,
-                        borderRadius: 2,
-                        border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.9)}`,
-                        bgcolor: alpha('#f8fafc', 0.8),
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {req.requested_name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Status: {req.status}
-                        {req.created_at ? ` · ${req.created_at}` : ''}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Stack>
-              </Box>
+              <CustomServiceRequestsReview
+                technicianId={technician.id}
+                requests={technician.custom_service_requests}
+              />
             ) : null}
 
             {canModerate && showRejectField ? (
@@ -278,18 +250,30 @@ export function TechnicianDetailsModal({
                 </Button>
               </>
             )}
-            <Button
-              variant="contained"
-              disableElevation
-              color="success"
-              disabled={isRejecting || showRejectField || isApproving}
-              onClick={() => onApprove(technician.id)}
-              startIcon={
-                isApproving ? <CircularProgress color="inherit" size={16} /> : undefined
+            <Tooltip
+              title={
+                approveBlockedByCustomServices
+                  ? 'Review all pending custom service requests below before approving this technician.'
+                  : ''
               }
             >
-              Approve
-            </Button>
+              <span>
+                <Button
+                  variant="contained"
+                  disableElevation
+                  color="success"
+                  disabled={
+                    isRejecting || showRejectField || isApproving || approveBlockedByCustomServices
+                  }
+                  onClick={() => onApprove(technician.id)}
+                  startIcon={
+                    isApproving ? <CircularProgress color="inherit" size={16} /> : undefined
+                  }
+                >
+                  Approve
+                </Button>
+              </span>
+            </Tooltip>
           </>
         ) : null}
       </DialogActions>

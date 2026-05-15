@@ -3,26 +3,24 @@ import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
 import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
-import { useEffect, useRef, useState } from 'react'
+import { startTransition, useEffect, useRef, useState } from 'react'
 import { getTechnicianIdCardBlob } from '../../services/adminService'
 
 interface TechnicianIdCardPreviewProps {
   technicianId: number
-  /** When false, revoke URL and stop loading */
+  /** When false, nothing is mounted (blob URL is released on unmount). */
   active: boolean
 }
 
-/**
- * Fetches protected ID card with Bearer token (`responseType: 'blob'`) and shows it.
- * @see `docs/frontend-integration.md` §7.5
- */
-export function TechnicianIdCardPreview({ technicianId, active }: TechnicianIdCardPreviewProps) {
+function TechnicianIdCardLoader({ technicianId }: { technicianId: number }) {
   const [objectUrl, setObjectUrl] = useState<string | null>(null)
-  const [phase, setPhase] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
+  const [phase, setPhase] = useState<'idle' | 'loading' | 'ready' | 'error'>('loading')
   const [message, setMessage] = useState<string | null>(null)
   const urlRef = useRef<string | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+
     const revokeCurrent = () => {
       if (urlRef.current) {
         URL.revokeObjectURL(urlRef.current)
@@ -31,17 +29,11 @@ export function TechnicianIdCardPreview({ technicianId, active }: TechnicianIdCa
       setObjectUrl(null)
     }
 
-    if (!active) {
-      revokeCurrent()
-      setPhase('idle')
-      setMessage(null)
-      return
-    }
-
-    let cancelled = false
-    setPhase('loading')
-    setMessage(null)
     revokeCurrent()
+    startTransition(() => {
+      setPhase('loading')
+      setMessage(null)
+    })
 
     ;(async () => {
       try {
@@ -64,19 +56,9 @@ export function TechnicianIdCardPreview({ technicianId, active }: TechnicianIdCa
 
     return () => {
       cancelled = true
+      revokeCurrent()
     }
-  }, [active, technicianId])
-
-  useEffect(() => {
-    return () => {
-      if (urlRef.current) {
-        URL.revokeObjectURL(urlRef.current)
-        urlRef.current = null
-      }
-    }
-  }, [])
-
-  if (!active) return null
+  }, [technicianId])
 
   return (
     <Box>
@@ -120,4 +102,13 @@ export function TechnicianIdCardPreview({ technicianId, active }: TechnicianIdCa
       ) : null}
     </Box>
   )
+}
+
+/**
+ * Fetches protected ID card with Bearer token (`responseType: 'blob'`) and shows it.
+ * @see `docs/frontend-integration.md` §7.5
+ */
+export function TechnicianIdCardPreview({ technicianId, active }: TechnicianIdCardPreviewProps) {
+  if (!active) return null
+  return <TechnicianIdCardLoader key={technicianId} technicianId={technicianId} />
 }

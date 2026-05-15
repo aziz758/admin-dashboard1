@@ -5,6 +5,8 @@ export const TOAST_IDS = {
   adminDashboardError: 'admin-dashboard-error',
   techniciansListError: 'technicians-list-error',
   requestsListError: 'requests-list-error',
+  ratingsListError: 'ratings-list-error',
+  usersListError: 'users-list-error',
 } as const
 
 export function toastSuccess(message: string) {

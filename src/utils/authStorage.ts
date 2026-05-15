@@ -90,13 +90,17 @@ export function markSessionActive(): void {
   }
 }
 
-/** Called by the API layer on 401 — redirects to login. */
+/**
+ * Called by the Axios interceptor on every 401 (including failed login).
+ * - Clears stored credentials so a bad or expired token is not reused.
+ * - Full-page redirect to `/login` when the user is inside the app shell; no redirect when the path
+ *   is already `/login` so the login form can show `getErrorMessage` without a reload loop.
+ */
 export function handleUnauthorized(): void {
   clearSession()
   if (AUTH_STRATEGY === 'cookie') {
     localStorage.removeItem('is_logged_in')
   }
-  // Only redirect if we're not already on the login page.
   if (window.location.pathname !== LOGIN_PATH) {
     window.location.replace(LOGIN_PATH)
   }

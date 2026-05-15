@@ -4,7 +4,7 @@ import { getAccessToken, handleUnauthorized } from '../utils/authStorage'
 /** Axios `baseURL` — must end with `/api` (see `docs/frontend-integration.md` §1). */
 function resolveApiBaseURL(): string {
   const raw = import.meta.env.VITE_API_URL?.trim()
-  if (!raw) return 'http://localhost:8000/api'
+  if (!raw) return 'http://192.168.43.199:8000/api'
   const base = raw.replace(/\/+$/, '')
   if (base.endsWith('/api')) return base
   return `${base}/api`
@@ -29,6 +29,12 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
+/**
+ * 401 handling (after phone + `user_type: customer` login — see `LoginPage.tsx`):
+ * - Clears token / session metadata and redirects to `/login`, except when already on the login route
+ *   (avoids reload loop; wrong-password responses still clear any stale token).
+ * - UI toasts use `getErrorMessage` which prefers FastAPI `detail` when present.
+ */
 api.interceptors.response.use(
   (response) => response,
   (error) => {

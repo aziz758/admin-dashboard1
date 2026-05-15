@@ -14,24 +14,45 @@ function formatCount(n: number): string {
   return n.toLocaleString(undefined, { maximumFractionDigits: 1 })
 }
 
+/** Prefer legacy keys when present; otherwise map §7.2 field names so render never sees `undefined`. */
+function pickNonNegative(...vals: Array<number | undefined | null>): number {
+  for (const v of vals) {
+    const x = Number(v)
+    if (Number.isFinite(x) && x >= 0) return x
+  }
+  return 0
+}
+
 export function mapAdminStatisticsToStatCards(
   stats: AdminStatisticsResponse,
 ): StatCardProps[] {
+  const activeTechnicians = pickNonNegative(
+    stats.active_technicians,
+    stats.total_technicians,
+  )
+  const pipelineSum =
+    pickNonNegative(stats.pending_requests) + pickNonNegative(stats.assigned_requests)
+  const openPipeline = pickNonNegative(stats.open_requests, pipelineSum)
+  const registeredUsers = pickNonNegative(stats.registered_users, stats.total_customers)
+  const ratingRaw = stats.average_rating ?? stats.avg_rating_platform
   const techChange = stats.technicians_change_percent
   const usersChange = stats.users_change_percent
 
   return [
     {
       title: 'Active technicians',
-      value: formatCount(stats.active_technicians),
-      subtitle: formatPercentChange(techChange ?? null),
+      value: formatCount(activeTechnicians),
+      subtitle:
+        stats.pending_approval_count != null && Number.isFinite(stats.pending_approval_count)
+          ? `${stats.pending_approval_count.toLocaleString()} pending approval`
+          : formatPercentChange(techChange ?? null),
       accent: 'indigo',
       trend: techChange != null && techChange > 0 ? 'up' : 'neutral',
       icon: <EngineeringOutlinedIcon sx={{ fontSize: 26 }} />,
     },
     {
       title: 'Open requests',
-      value: formatCount(stats.open_requests),
+      value: formatCount(openPipeline),
       subtitle: formatNewToday(stats.requests_new_today ?? null),
       accent: 'amber',
       trend:
@@ -40,7 +61,7 @@ export function mapAdminStatisticsToStatCards(
     },
     {
       title: 'Registered users',
-      value: formatCount(stats.registered_users),
+      value: formatCount(registeredUsers),
       subtitle: formatPercentChange(usersChange ?? null),
       accent: 'emerald',
       trend: usersChange != null && usersChange > 0 ? 'up' : 'neutral',
@@ -48,9 +69,7 @@ export function mapAdminStatisticsToStatCards(
     },
     {
       title: 'Avg. rating',
-      value: Number.isFinite(stats.average_rating)
-        ? stats.average_rating.toFixed(1)
-        : '—',
+      value: Number.isFinite(Number(ratingRaw)) ? Number(ratingRaw).toFixed(1) : '—',
       subtitle: formatRatingSubtitle(),
       accent: 'violet',
       trend: 'neutral',
