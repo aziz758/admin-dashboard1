@@ -1,4 +1,3 @@
-import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
 import { useAdminDashboard } from '../hooks/useAdminDashboard'
 import { useAdminStatistics } from '../hooks/useAdminStatistics'
@@ -40,11 +39,7 @@ export function DashboardPage() {
         eyebrow="Dashboard"
         title="Overview"
         description="Monitor technicians, service requests, and customer satisfaction in one place. Figures below load from your admin API."
-        action={
-          <Button variant="contained" size="large" disableElevation sx={{ px: 2.5, py: 1.25 }}>
-            Export report
-          </Button>
-        }
+
       />
 
       <DashboardStatsSection
